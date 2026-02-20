@@ -21,9 +21,14 @@ class DbSettings(BaseModel):
     def sqlalchemy_url(self):
         return URL.create(drivername="postgresql+asyncpg", database=self.name, host="localhost",port=self.port,username=self.username,password=self.password)
 
+class AuthSettings(BaseModel):
+    algorithm: str = "RS256"
+    private_key_path: Path = ROOT / "certs" /  "private.pem"
+    public_key_path: Path = ROOT / "certs" /  "public.pem"
 
 class Settings(BaseSettings):
     db: DbSettings
+    auth: AuthSettings = AuthSettings()
 
     model_config = SettingsConfigDict(
         env_file= str(ROOT / ".env"),
