@@ -8,4 +8,4 @@ class UserOrm(Base):
     email: Mapped[str] = mapped_column(String, unique=True)
     username: Mapped[str] = mapped_column(String)
     password: Mapped[bytes] = mapped_column(LargeBinary)
-    is_admin: Mapped[bool] = mapped_column(Boolean)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, server_default='false')
