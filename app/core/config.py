@@ -1,25 +1,33 @@
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+from sqlalchemy import URL
 
-class DbSettings(BaseSettings):
+ROOT = Path(__file__).resolve().parent.parent.parent
+
+class DbSettings(BaseModel):
     host: str
     port: int
-    db_name: str
+    name: str
     username: str
     password: str
 
     @property
     def url(self):
-        return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.db_name}"
+        return URL.create(drivername="postgresql+asyncpg", database=self.name, host=self.host,port=self.port,username=self.username,password=self.password)
+
+    @property
+    def sqlalchemy_url(self):
+        return URL.create(drivername="postgresql+asyncpg", database=self.name, host="localhost",port=self.port,username=self.username,password=self.password)
 
 
 class Settings(BaseSettings):
-    db: DbSettings = DbSettings()
+    db: DbSettings
 
-    SettingsConfigDict(
-        env_file= ROOT / ".env",
+    model_config = SettingsConfigDict(
+        env_file= str(ROOT / ".env"),
+        env_file_encoding="utf-8",
         env_nested_delimiter="__"
     )
 
