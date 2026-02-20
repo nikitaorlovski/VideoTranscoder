@@ -1,0 +1,33 @@
+services:
+  app:
+    container_name: app
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+  pg:
+    image: postgres:17.6-bookworm
+    environment:
+      POSTGRES_DB: $db__name
+      POSTGRES_USER: $db__username
+      POSTGRES_PASSWORD: $db__password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  pg_admin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - pg
+
+volumes:
+  postgres_data:
