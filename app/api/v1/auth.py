@@ -4,7 +4,6 @@ from app.core.security import encode_jwt
 from app.dependencies import (
     validate_current_user,
     get_user_service,
-    get_current_auth_user,
 )
 from app.domain.exceptions import UserAlreadyExists
 from app.schemas import UserRegister

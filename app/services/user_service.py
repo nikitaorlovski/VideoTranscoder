@@ -12,7 +12,7 @@ class UserService:
         self.repo = repo
 
     async def register(self, user: UserRegister) -> Token:
-        if exists_user := await self.repo.get_user_by_email(user.email):
+        if await self.repo.get_user_by_email(user.email):
             raise UserAlreadyExists()
         hashed_password = hash_password(user.password)
         new_user = await self.repo.register(
