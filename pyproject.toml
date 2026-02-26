@@ -18,7 +18,8 @@ dependencies = [
     "sqlalchemy (>=2.0.46,<3.0.0)",
     "uvicorn (>=0.41.0,<0.42.0)",
     "cryptography (>=46.0.5,<47.0.0)",
-    "python-multipart (>=0.0.22,<0.0.23)"
+    "python-multipart (>=0.0.22,<0.0.23)",
+    "ruff (>=0.15.2,<0.16.0)"
 ]
 
 
@@ -29,3 +30,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.dev.dependencies]
 black = "^26.1.0"
 
+[tool.ruff]
+exclude = [
+    "tests/",
+    "app/alembic/",
+    "*.env",
+]
