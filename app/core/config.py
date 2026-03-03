@@ -44,9 +44,20 @@ class AuthSettings(BaseModel):
     access_token_expire_minutes: int = 60
 
 
+class RedisSettings(BaseModel):
+    host: str = "localhost"
+    port: int = 6379
+    db: int = 0
+
+    @property
+    def url(self):
+        return f"redis://{self.host}:{self.port}/{self.db}"
+
+
 class Settings(BaseSettings):
     db: DbSettings
     auth: AuthSettings = AuthSettings()
+    redis: RedisSettings = RedisSettings()
 
     model_config = SettingsConfigDict(
         env_file=str(ROOT / ".env"),
