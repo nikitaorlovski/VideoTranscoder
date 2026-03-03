@@ -5,7 +5,7 @@ from app.schemas.users import UserSchema
 from app.schemas.videos import VideoMeta
 from app.services.video_service import VideoService
 
-router = APIRouter(prefix="/api/v1/video", tags=["VideoAPI"])
+router = APIRouter(prefix="/api/v1/videos", tags=["VideoAPI"])
 
 
 @router.post("/")
@@ -21,3 +21,11 @@ async def upload_video(
         size=video.size,
     )
     return await service.add_new_video(new_video, video)
+
+
+@router.get("/")
+async def get_videos(
+    user: UserSchema = Depends(get_current_auth_user),
+    service: VideoService = Depends(get_video_service),
+):
+    return await service.get_all_user_videos(user.id)
