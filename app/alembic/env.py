@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import settings
 from app.database.db import Base
-from app.models.users import UserOrm
+from app.models import UserOrm
+from app.models import VideoOrm
 from alembic import context
 
 # this is the Alembic Config object, which provides
