@@ -48,3 +48,6 @@ class VideoService:
                 logger.exception("Failed to remove file: %s", file_path)
 
             raise
+
+    async def get_all_user_videos(self, user_id) -> list[VideoOrm]:
+        return await self.repo.get_all_user_videos(user_id)
