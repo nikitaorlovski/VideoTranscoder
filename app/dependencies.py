@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import verify_password, decode_jwt
 from app.database.db import new_session
 from app.repositories.user_repository import UserRepository
+from app.repositories.video_repository import VideoRepository
 from app.schemas.users import UserSchema
 from app.services.user_service import UserService
+from app.services.video_service import VideoService
 
 http_bearer = HTTPBearer()
 
@@ -60,3 +62,15 @@ async def get_current_auth_user(
     if not (user := await service.get_user_by_email(payload["email"])):
         raise HTTPException(status_code=401, detail="Token invalid")
     return user
+
+
+async def get_video_repository(
+    session: AsyncSession = Depends(get_async_session),
+) -> VideoRepository:
+    return VideoRepository(session)
+
+
+async def get_video_service(
+    repo: VideoRepository = Depends(get_video_repository),
+) -> VideoService:
+    return VideoService(repo)
