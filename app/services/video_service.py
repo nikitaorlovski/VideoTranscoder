@@ -6,6 +6,7 @@ import os
 import logging
 import aiofiles
 import asyncio
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,8 @@ class VideoService:
         extension = extension.lower()
         return os.path.join(self.get_source_dir(), f"{video_id}.{extension}")
 
-    def build_480_path(self, video_id: str) -> str:
-        return os.path.join(self.get_480_dir(), f"{video_id}_480.mp4")
+    def build_480_path(self, video_id: str, extension: str) -> str:
+        return os.path.join(self.get_480_dir(), f"{video_id}_480.{extension}")
 
     async def add_new_video(self, video_meta: VideoMeta, video_file):
         video_id = str(uuid.uuid4())
@@ -84,7 +85,7 @@ class VideoService:
 
         source_path = video.path
         converted_uuid = str(uuid.uuid4())
-        output_path = self.build_480_path(converted_uuid)
+        output_path = self.build_480_path(converted_uuid, video.extension)
 
         if not os.path.exists(source_path):
             video.status = "failed"
@@ -136,7 +137,7 @@ class VideoService:
                 VideoOrm(
                     uuid=str(uuid.uuid4()),
                     filename=f"cropped_480_{video.filename}",
-                    extension="mp4",
+                    extension=video.extension,
                     size=os.path.getsize(output_path),
                     status="ready",
                     owner_id=video.owner_id,
@@ -162,6 +163,44 @@ class VideoService:
                 logger.exception("Failed to remove converted file: %s", output_path)
 
             raise
+
+    async def get_thumbnail(self, video_id: str, owner_id: int) -> str:
+        video = await self.repo.get_by_uuid_and_owner(video_id, owner_id)
+        if not video:
+            raise ValueError("Video not found")
+
+        if not os.path.exists(video.path):
+            raise FileNotFoundError("Source video not found")
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp_path = tmp.name
+        tmp.close()
+
+        process = await asyncio.create_subprocess_exec(
+            "ffmpeg",
+            "-y",
+            "-i",
+            video.path,
+            "-ss",
+            "00:00:01",
+            "-vframes",
+            "1",
+            tmp_path,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        _, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except Exception:
+                pass
+            raise RuntimeError(stderr.decode(errors="ignore"))
+
+        return tmp_path
 
     async def get_video_by_uuid_and_owner(
         self,
