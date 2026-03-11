@@ -21,3 +21,20 @@ class VideoRepository:
             select(VideoOrm).where(VideoOrm.owner_id == user_id)
         )
         return result.scalars().all()
+
+    async def get_by_uuid(self, video_id: str) -> VideoOrm | None:
+        result = await self.session.execute(
+            select(VideoOrm).where(VideoOrm.uuid == video_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_uuid_and_owner(
+        self, video_id: str, owner_id: int
+    ) -> VideoOrm | None:
+        result = await self.session.execute(
+            select(VideoOrm).where(
+                VideoOrm.uuid == video_id,
+                VideoOrm.owner_id == owner_id,
+            )
+        )
+        return result.scalar_one_or_none()
