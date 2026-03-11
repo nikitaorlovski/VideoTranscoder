@@ -8,6 +8,8 @@ services:
       - .env
     ports:
       - "8000:8000"
+    volumes:
+      - ./storage:/app/storage
   pg:
     image: postgres:17.6-bookworm
     environment:
@@ -39,6 +41,8 @@ services:
       - redis
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
+    volumes:
+      - ./storage:/app/storage
 
 volumes:
   postgres_data:
