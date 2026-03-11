@@ -11,6 +11,7 @@ class VideoOrm(Base):
     filename: Mapped[str] = mapped_column(String)
     extension: Mapped[str] = mapped_column(String)
     size: Mapped[int] = mapped_column(Integer)
+    path: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
