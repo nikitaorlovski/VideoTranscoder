@@ -45,7 +45,7 @@ class AuthSettings(BaseModel):
 
 
 class RedisSettings(BaseModel):
-    host: str = "localhost"
+    host: str = "redis"
     port: int = 6379
     db: int = 0
 
