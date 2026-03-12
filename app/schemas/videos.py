@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 import datetime
 
@@ -23,3 +25,6 @@ class VideoResponse(BaseModel):
     owner_id: int
     created_at: datetime.datetime
     model_config = ConfigDict(from_attributes=True)
+
+class VideoFormatConvertRequest(BaseModel):
+    target_format: Literal["mp4", "webm", "mov", "mkv", "avi"]
