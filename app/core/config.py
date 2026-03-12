@@ -55,7 +55,7 @@ class RedisSettings(BaseModel):
 
 
 class VideoSettings(BaseModel):
-    max_size: int = 100000
+    max_size: int = 1000  # megabytes
 
 
 class Settings(BaseSettings):

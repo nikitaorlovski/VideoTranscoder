@@ -32,7 +32,7 @@ def validate_video_upload(video: UploadFile) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only video files are allowed",
         )
-    if video.size > settings.video.max_size:
+    if video.size > settings.video.max_size * 1024 * 1024:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="File too large",
