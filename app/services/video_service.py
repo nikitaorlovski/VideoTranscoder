@@ -10,6 +10,14 @@ import tempfile
 
 logger = logging.getLogger(__name__)
 
+FORMAT_CODECS = {
+    "mp4": {"video": "libx264", "audio": "aac"},
+    "webm": {"video": "libvpx-vp9", "audio": "libopus"},
+    "avi": {"video": "mpeg4", "audio": "mp3"},
+    "mkv": {"video": "libx264", "audio": "aac"},
+    "mov": {"video": "libx264", "audio": "aac"},
+}
+
 
 class VideoService:
     def __init__(self, repo: VideoRepository):
@@ -202,6 +210,113 @@ class VideoService:
             raise RuntimeError(stderr.decode(errors="ignore"))
 
         return tmp_path
+
+    def get_converted_dir(self) -> str:
+        return os.path.join(self.storage, "converted")
+
+    def build_converted_path(self, video_id: str, extension: str) -> str:
+        extension = extension.lower()
+        return os.path.join(self.get_converted_dir(), f"{video_id}.{extension}")
+
+    def build_ffmpeg_convert_command(
+        self,
+        source_path: str,
+        output_path: str,
+        target_format: str,
+    ) -> list[str]:
+        codecs = FORMAT_CODECS.get(target_format)
+        if not codecs:
+            raise ValueError(f"Unsupported target format: {target_format}")
+
+        return [
+            "ffmpeg",
+            "-y",
+            "-i",
+            source_path,
+            "-c:v",
+            codecs["video"],
+            "-c:a",
+            codecs["audio"],
+            output_path,
+        ]
+
+    async def convert_video_format(
+        self,
+        video_id: str,
+        target_format: str,
+    ) -> VideoResponse:
+        target_format = target_format.lower().strip()
+
+        if target_format not in FORMAT_CODECS:
+            raise ValueError(f"Unsupported target format: {target_format}")
+
+        video = await self.repo.get_by_uuid(video_id)
+        if not video:
+            raise ValueError(f"Video with id={video_id} not found")
+
+        source_path = video.path
+        if not os.path.exists(source_path):
+            raise FileNotFoundError(f"Source file not found: {source_path}")
+
+        os.makedirs(self.get_converted_dir(), exist_ok=True)
+
+        converted_uuid = str(uuid.uuid4())
+        output_path = self.build_converted_path(converted_uuid, target_format)
+        output_filename = f"{os.path.splitext(video.filename)[0]}.{target_format}"
+
+        command = self.build_ffmpeg_convert_command(
+            source_path=source_path,
+            output_path=output_path,
+            target_format=target_format,
+        )
+
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+
+            stdout, stderr = await process.communicate()
+
+            if process.returncode != 0:
+                logger.error(
+                    "ffmpeg format conversion failed: video_id=%s target_format=%s stdout=%s stderr=%s",
+                    video_id,
+                    target_format,
+                    stdout.decode(errors="ignore"),
+                    stderr.decode(errors="ignore"),
+                )
+                raise RuntimeError("Video format conversion failed")
+
+            converted_video = await self.repo.add_new_video(
+                VideoOrm(
+                    uuid=converted_uuid,
+                    filename=output_filename,
+                    extension=target_format,
+                    size=os.path.getsize(output_path),
+                    status="ready",
+                    owner_id=video.owner_id,
+                    path=output_path,
+                )
+            )
+
+            return VideoResponse.model_validate(converted_video)
+
+        except Exception:
+            logger.exception(
+                "Conversion failed: video_id=%s target_format=%s",
+                video_id,
+                target_format,
+            )
+
+            try:
+                if os.path.exists(output_path):
+                    os.remove(output_path)
+            except Exception:
+                logger.exception("Failed to remove converted file: %s", output_path)
+
+            raise
 
     async def get_video_by_uuid_and_owner(
         self,

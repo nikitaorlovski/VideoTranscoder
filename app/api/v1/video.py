@@ -1,9 +1,13 @@
 from app.validators.video_validator import validate_video_upload
 from app.dependencies import get_video_service, get_current_auth_user
 from app.schemas.users import UserSchema
-from app.schemas.videos import VideoMeta, VideoConvertResponse
+from app.schemas.videos import (
+    VideoMeta,
+    VideoConvertResponse,
+    VideoFormatConvertRequest,
+)
 from app.services.video_service import VideoService
-from app.celery.tasks.video_tasks import convert_to_480_task
+from app.celery.tasks.video_tasks import convert_to_480_task, convert_video_format_task
 from fastapi import (
     BackgroundTasks,
     Depends,
@@ -65,7 +69,7 @@ async def convert_video_to_480(
     )
 
 
-@router.get("/videos/{video_id}/thumbnail")
+@router.get("/{video_id}/thumbnail")
 async def get_thumbnail(
     video_id: str,
     background_tasks: BackgroundTasks,
@@ -87,4 +91,31 @@ async def get_thumbnail(
         path=thumbnail_path,
         media_type="image/jpeg",
         filename=f"thumbnail.jpg",
+    )
+
+
+@router.post(
+    "/{video_id}/convert",
+    summary="Convert Video Format",
+    response_model=VideoConvertResponse,
+)
+async def convert_video(
+    new_format: VideoFormatConvertRequest,
+    video_id: str,
+    user: UserSchema = Depends(get_current_auth_user),
+    service: VideoService = Depends(get_video_service),
+):
+    video = await service.get_video_by_uuid_and_owner(video_id, user.id)
+    if not video:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Video not found",
+        )
+
+    task = convert_video_format_task.delay(video.uuid, new_format.target_format)
+
+    return VideoConvertResponse(
+        video_id=video.uuid,
+        task_id=task.id,
+        status="processing",
     )
