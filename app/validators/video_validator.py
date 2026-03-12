@@ -1,4 +1,6 @@
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile, HTTPException
+from starlette import status
+from app.core.config import settings
 
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "mov", "mkv", "avi", "webm"}
 ALLOWED_VIDEO_CONTENT_TYPES = {
@@ -30,7 +32,11 @@ def validate_video_upload(video: UploadFile) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only video files are allowed",
         )
-
+    if video.size > settings.video.max_size:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File too large",
+        )
     if video.content_type not in ALLOWED_VIDEO_CONTENT_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
