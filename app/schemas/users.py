@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 
 class UserRegister(BaseModel):
     username: str
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=5, max_length=20)
 
 
 class UserSchema(BaseModel):
