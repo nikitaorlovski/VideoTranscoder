@@ -54,10 +54,15 @@ class RedisSettings(BaseModel):
         return f"redis://{self.host}:{self.port}/{self.db}"
 
 
+class VideoSettings(BaseModel):
+    max_size: int = 100000
+
+
 class Settings(BaseSettings):
     db: DbSettings
     auth: AuthSettings = AuthSettings()
     redis: RedisSettings = RedisSettings()
+    video: VideoSettings = VideoSettings()
 
     model_config = SettingsConfigDict(
         env_file=str(ROOT / ".env"),
