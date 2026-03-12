@@ -1,6 +1,6 @@
 from app.models.video import VideoOrm
 from app.repositories.video_repository import VideoRepository
-from app.schemas.videos import VideoMeta
+from app.schemas.videos import VideoMeta, VideoResponse
 import uuid
 import os
 import logging
@@ -29,7 +29,7 @@ class VideoService:
     def build_480_path(self, video_id: str, extension: str) -> str:
         return os.path.join(self.get_480_dir(), f"{video_id}_480.{extension}")
 
-    async def add_new_video(self, video_meta: VideoMeta, video_file):
+    async def add_new_video(self, video_meta: VideoMeta, video_file) -> VideoResponse:
         video_id = str(uuid.uuid4())
         file_path = self.build_source_path(video_id, video_meta.extension)
 
@@ -54,7 +54,7 @@ class VideoService:
 
             new_video.status = "uploaded"
             await self.repo.update(new_video)
-            return new_video
+            return VideoResponse.model_validate(new_video)
 
         except Exception:
             logger.exception(
@@ -75,10 +75,11 @@ class VideoService:
 
             raise
 
-    async def get_all_user_videos(self, user_id) -> list[VideoOrm]:
-        return await self.repo.get_all_user_videos(user_id)
+    async def get_all_user_videos(self, user_id) -> list[VideoResponse]:
+        videos = await self.repo.get_all_user_videos(user_id)
+        return [VideoResponse.model_validate(v) for v in videos]
 
-    async def convert_to_480(self, video_id: str) -> VideoOrm:
+    async def convert_to_480(self, video_id: str) -> VideoResponse:
         video = await self.repo.get_by_uuid(video_id)
         if not video:
             raise ValueError(f"Video with id={video_id} not found")
@@ -148,7 +149,7 @@ class VideoService:
             video.status = "ready"
             await self.repo.update(video)
 
-            return result_video
+            return VideoResponse.model_validate(result_video)
 
         except Exception:
             logger.exception("Conversion to 480p failed for video_id=%s", video_id)
@@ -206,5 +207,6 @@ class VideoService:
         self,
         video_id: str,
         owner_id: int,
-    ) -> VideoOrm | None:
-        return await self.repo.get_by_uuid_and_owner(video_id, owner_id)
+    ) -> VideoResponse | None:
+        video = await self.repo.get_by_uuid_and_owner(video_id, owner_id)
+        return VideoResponse.model_validate(video)
