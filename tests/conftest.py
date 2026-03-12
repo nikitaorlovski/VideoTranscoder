@@ -1,7 +1,8 @@
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from httpx import ASGITransport, AsyncClient
-
+import pytest
+from app.core.config import settings
 from app.core.security import hash_password
 from app.database.db import Base
 from app.dependencies import get_async_session
@@ -82,3 +83,11 @@ async def authorized_client(client, user_factory):
     access_token = response.json()["access_token"]
     client.headers.update({"Authorization": f"Bearer {access_token}"})
     return client, user
+
+
+@pytest.fixture
+def small_video_limit():
+    old_value = settings.video.max_size
+    settings.video.max_size = 5  # 5 MB
+    yield
+    settings.video.max_size = old_value
