@@ -1,4 +1,4 @@
-from app.api.validators import validate_video_upload
+from app.validators.video_validator import validate_video_upload
 from app.dependencies import get_video_service, get_current_auth_user
 from app.schemas.users import UserSchema
 from app.schemas.videos import VideoMeta, VideoConvertResponse
@@ -15,7 +15,7 @@ from fastapi import (
 from fastapi.responses import FileResponse
 import os
 
-router = APIRouter(prefix="/api/v1/videos", tags=["VideoAPI"])
+router = APIRouter(prefix="/videos", tags=["VideoAPI"])
 
 
 @router.post("/")

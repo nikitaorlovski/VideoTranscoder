@@ -11,7 +11,7 @@ from app.schemas.token import Token
 from app.schemas.users import UserSchema
 from app.services.user_service import UserService
 
-router = APIRouter(prefix="/api/v1/auth", tags=["Authentification"])
+router = APIRouter(prefix="/auth", tags=["Authentification"])
 
 
 @router.post("/register")
