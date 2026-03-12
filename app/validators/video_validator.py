@@ -13,11 +13,6 @@ ALLOWED_VIDEO_CONTENT_TYPES = {
 
 
 def validate_video_upload(video: UploadFile) -> str:
-    if not video.filename:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Filename is required",
-        )
 
     if "." not in video.filename:
         raise HTTPException(
@@ -34,7 +29,7 @@ def validate_video_upload(video: UploadFile) -> str:
         )
     if video.size > settings.video.max_size * 1024 * 1024:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail="File too large",
         )
     if video.content_type not in ALLOWED_VIDEO_CONTENT_TYPES:
