@@ -7,6 +7,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      db__host: pg
+      db__port: 5432
+      db__name: video
+      db__username: app
+      db__password: password
 
     steps:
       - name: Checkout repository
