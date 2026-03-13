@@ -6,7 +6,7 @@ from app.core.config import settings
 from app.core.security import hash_password
 from app.database.db import Base
 from app.dependencies import get_async_session
-from app.models import UserOrm
+from app.models import UserOrm, VideoOrm
 from main import app
 
 test_db_url = "sqlite+aiosqlite:///./test.db"
@@ -72,6 +72,35 @@ async def user_factory(test_db_session):
         return user
 
     return create_user
+
+
+@pytest_asyncio.fixture
+async def video_factory(test_db_session):
+    async def create_video(
+        uuid: str = "1234567899101112131415161718192021222324",
+        filename: str = "filename",
+        extension: str = "mp4",
+        size: int = 400,
+        path: str = "storage/videos/source",
+        status: str = "uploaded",
+        owner_id: int = 1,
+    ):
+        video = VideoOrm(
+            uuid=uuid,
+            filename=filename,
+            extension=extension,
+            size=size,
+            path=path,
+            status=status,
+            owner_id=owner_id,
+        )
+        db = test_db_session
+        db.add(video)
+        await db.commit()
+        await db.refresh(video)
+        return video
+
+    return create_video
 
 
 @pytest_asyncio.fixture
