@@ -22,7 +22,7 @@ FORMAT_CODECS = {
 class VideoService:
     def __init__(self, repo: VideoRepository):
         self.repo = repo
-        self.storage = "/app/storage/videos"
+        self.storage = "storage/videos"
 
     def get_source_dir(self) -> str:
         return os.path.join(self.storage, "source")
