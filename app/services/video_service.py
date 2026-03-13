@@ -324,4 +324,6 @@ class VideoService:
         owner_id: int,
     ) -> VideoResponse | None:
         video = await self.repo.get_by_uuid_and_owner(video_id, owner_id)
+        if video is None:
+            return None
         return VideoResponse.model_validate(video)
