@@ -5,7 +5,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791.svg)](https://www.postgresql.org/)
 [![Celery](https://img.shields.io/badge/Celery-5.4.0-green.svg)](https://docs.celeryq.dev/)
 [![Docker](https://img.shields.io/badge/Docker-✓-2496ED.svg)](https://www.docker.com/)
-[![codecov](https://codecov.io/gh/yourusername/videotranscoder/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/videotranscoder)
+[![codecov](https://codecov.io/gh/nikitaorlovski/videotranscoder/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/videotranscoder)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Современный сервис для транскодирования видео с поддержкой различных форматов и разрешений. Построен на стеке FastAPI + Celery + FFmpeg с асинхронной обработкой задач.
