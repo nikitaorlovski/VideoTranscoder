@@ -23,13 +23,11 @@ jobs:
         with:
           python-version: "3.13.12"
 
-      # Отдельный шаг: установка Poetry
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
           pip install poetry
 
-      # 👇 Отдельный шаг для добавления poetry в PATH
       - name: Add Poetry to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
 
@@ -55,7 +53,13 @@ jobs:
       - name: Run tests with coverage
         run: COVERAGE_NO_EXTENSION=1 poetry run pytest --cov=app --cov-report=xml --cov-report=term-missing
 
+      - name: Check coverage file
+        if: always()
+        run: ls -la coverage.xml
+
       - name: Upload coverage to Codecov
+        if: always()
         uses: codecov/codecov-action@v4
         with:
+          files: ./coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
