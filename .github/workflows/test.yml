@@ -46,6 +46,12 @@ jobs:
       - name: Install dependencies with Poetry
         run: poetry install --no-interaction --no-root
 
+      - name: Generate RSA keys for tests
+        run: |
+          mkdir -p certs
+          openssl genrsa -out certs/private.pem 2048
+          openssl rsa -in certs/private.pem -pubout -out certs/public.pem
+
       - name: Run tests with coverage
         run: COVERAGE_NO_EXTENSION=1 poetry run pytest --cov=app --cov-report=xml --cov-report=term-missing
 
